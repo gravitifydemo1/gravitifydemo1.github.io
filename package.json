@@ -1,0 +1,33 @@
+{
+  "name": "gravitify.io",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "webpack --optimize-minimize",
+    "serve": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/canvasdemo2d/canvasdemo2d.github.io.git"
+  },
+  "author": "Shukant Pal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/canvasdemo2d/canvasdemo2d.github.io/issues"
+  },
+  "homepage": "https://github.com/canvasdemo2d/canvasdemo2d.github.io#readme",
+  "dependencies": {
+    "pixi.js": "^4.8.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "babel-loader": "^8.0.5",
+    "http-server": "^0.11.1",
+    "uglifyjs-webpack-plugin": "^2.1.2",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.2.1"
+  }
+}
