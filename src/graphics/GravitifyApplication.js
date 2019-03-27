@@ -5,7 +5,7 @@
 
 import * as PIXI from 'pixi.js'
 
-export const TIME_UNIT = 30/1000;
+export const TIME_UNIT = 10/1000;
 export const globalGameConfig = {
   height: 512,
   width: 512,

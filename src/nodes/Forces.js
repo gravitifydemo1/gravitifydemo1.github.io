@@ -45,7 +45,7 @@ export class KineticSurfaceFriction {
 
 export class BoostForce {
 
-  constructor(target, boost = 12) {
+  constructor(target, boost = 4) {
     this.target = target;
     this.boost = boost;
   }

@@ -18,13 +18,16 @@
   },
   "homepage": "https://github.com/canvasdemo2d/canvasdemo2d.github.io#readme",
   "dependencies": {
+    "npm": "^6.9.0",
     "pixi.js": "^4.8.7"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
     "@babel/preset-env": "^7.4.2",
     "babel-loader": "^8.0.5",
+    "babel-plugin-minify-dead-code-elimination": "^0.5.0",
     "http-server": "^0.11.1",
+    "terser-webpack-plugin": "^1.2.3",
     "uglifyjs-webpack-plugin": "^2.1.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0",

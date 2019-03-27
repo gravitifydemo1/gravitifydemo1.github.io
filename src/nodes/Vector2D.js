@@ -14,6 +14,14 @@ export function getTheta(v) {
   return Math.atan(v.y/v.x);
 }
 
+export function slope(x1, y1, x2,y2) {
+  if (arguments.length === 2) {
+    return slope(x1.x, x1.y, y1.x, y1.y);
+  }
+
+  return (y2-y1)/(x2-x1);
+}
+
 export function euclideanDirection(x1,y1, x2,y2) {
   if (arguments.length === 2) {
     return euclideanDirection(x1.x, x1.y, y1.x, y1.y);
@@ -39,6 +47,13 @@ export function add2D(v1, v2) {
   return {
     x: v1.x + v2.x,
     y: v1.y + v2.y
+  };
+}
+
+export function sub2D(v1, v2) {
+  return {
+    x: v1.x - v2.x,
+    y: v1.y - v2.y
   };
 }
 

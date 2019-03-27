@@ -8,11 +8,14 @@ import { Node }  from './Node'
 const NodeDrawer = require('../graphics/NodeDrawer');
 
 import {
+  getMagnitude,
   add2D,
+  sub2D,
   multiplyScalar2D,
   euclideanDistance,
   euclideanDirection,
   inDirection2D,
+  slope,
   dotProduct
 } from './Vector2D'
 
@@ -196,6 +199,76 @@ function applyTranslation(node, dx, dy) {
 }
 
 /**
+ * Calculates whether two nodes are expected to collide if their
+ * velocities remain approximately linear till their point of
+ * collision. It also assumes the particles are overlapping already.
+ *
+ * This is done by finding the intersection of their linear
+ * line-of-motion as: y - y0 = (v.y/v.x) * x + x0 where (x,y)
+ * is the variable point. This equation is transformed into
+ * line-intercept form: y = m1x+c1 & y = m2x+c2
+ *
+ * The intersection is: (-[c1-c2]/[m1-m2], [c1m2-c2m1]/[m2-m1])
+ *
+ * Parametric x equations: x = v.x * t + x0 => t = (x-x0)/v.x
+ *
+ * If both particles reach the intersection in the future, then
+ * the collision is expected.
+ */
+function isCollisionPending(node1, node2) {
+  const s1 = node1.position, s2 = node2.position;
+  const v1 = node1.velocity, v2 = node2.velocity;
+  const m1 = v1.y / v1.x, m2 = v2.y / v2.x;
+  const c1 = s1.x + s1.y, c2 = s2.x + s2.y;
+  const r1 = node1.metrics.radius, r2 = node2.metrics.radius;
+
+  if (m1 == m2) {
+    return add2D(v1, v2).x === 0;
+  }
+
+  const pm = -1 / slope(s1, s2);
+  const midx = (s1.x+s2.x) / 2, midy = (s1.y+s2.y) / 2;
+  const c = (midy-pm*midx);
+  const upperNodeIs1 = ((s1.x*pm) - s1.y + c) > 0;
+  const upperNodeIs2 = ((s2.x*pm) - s2.y + c) > 0;
+  if (upperNodeIs1 === upperNodeIs2) {
+    throw "logic error";
+  }
+
+  const upperNode = (upperNodeIs1) ? node1 : node2;
+  const lowerNode = (upperNodeIs1) ? node2 : node1;
+  if ((upperNode.velocity.y/upperNode.velocity.x) < pm ||
+    (lowerNode.velocity.y/lowerNode.velocity.x) > pm) {
+  } else {
+    return false;
+  }
+
+  const x = -(c1-c2)/(m1-m2);
+
+  const t1 = (x - s1.x) / v1.x;
+  const t2 = (x - s2.x) / v2.x;
+
+  if (t1 === Math.NaN || t2 === Math.NaN)
+    return false;
+  if (Math.abs(t1)*getMagnitude(v1) < node1.metrics.radius*2 ||
+      Math.abs(t2)*getMagnitude(v2) < node2.metrics.radius*2)
+    return false;
+  console.log("Collision pending");
+  return true;
+}
+
+function applyCollisionToResult(node1, node2) {
+  const m1 = node1.metrics.mass, m2 = node2.metrics.mass;
+  const ux1 = node1.originalVelocity.x, ux2 = node2.originalVelocity.x;
+  const uy1 = node1.originalVelocity.y, uy2 = node2.originalVelocity.y;
+
+  return {// v1
+    x: ((m1-m2)*ux1 + 2*m2*ux2) / (m1+m2),
+    y: ((m1-m2)*uy1 + 2*m2*uy2) / (m1+m2)
+  };
+}
+
+/**
  * The universe of 'nodes', where all nodes are circular entities
  * isolated in the canvas's 2D space.
  *
@@ -229,10 +302,13 @@ class Nodiverse {
       this.nodes[nIdx] = node;
 
       node.nodeTracker = {
-        forces: [  //new KineticSurfaceFriction(node, -1.5),
-                  new BoostForce(node) ]
+        forces: [  //new KineticSurfaceFriction(node, .1),
+                  new BoostForce(node)
+                ]
         // just friction & boost (keeping it in motion)
       }
+      node.oldNodalGroup = [];
+      node.id = nIdx;
     }
 
     this.render = this.render.bind(this);
@@ -243,7 +319,7 @@ class Nodiverse {
   }
 
   startLooper() {
-    this.updateClock = setInterval(this.updateTime, 1 / GravitifyApplication.TIME_UNIT);
+    this.updateClock = setInterval(this.updateTime, 1000 * GravitifyApplication.TIME_UNIT);
     this.renderRecursive();
   }
 
@@ -301,15 +377,7 @@ class Nodiverse {
     const nodeCount = this.nodeCount;
     const nodes = this.nodes;
     for (let i = 0; i < nodeCount; i++) {
-      if (nodes[i].nodalGroup !== undefined &&
-            nodes[i].nodalGroup.length != 1) {
-        nodes[i].inOverlapAlready = true;
-      } else {
-        nodes[i].inOverlapAlready = false;
-      }
-
-      nodes[i].nodalGroup = [ nodes[i] ];
-      nodes[i].nodalGroup.marked = false;
+      nodes[i].nodalGroup = [ ];
     }
 
     for (let i = 0; i < nodeCount; i++) {
@@ -318,9 +386,8 @@ class Nodiverse {
         const jNode = nodes[j];
 
         if (iNode.isOverlapped(jNode)) {
-          let newNodalGroup = iNode.nodalGroup.concat(jNode.nodalGroup);
-          iNode.nodalGroup = newNodalGroup;
-          jNode.nodalGroup = newNodalGroup;
+          iNode.nodalGroup.push(jNode);
+          jNode.nodalGroup.push(iNode);
         }
       }
     }
@@ -337,6 +404,10 @@ class Nodiverse {
 
     for (let i = 0; i < nodeCount; i++) {
       nodes[i].originalVelocity = nodes[i].velocity;
+      if (nodes[i].nodalGroup.length > 0) {
+        nodes[i].velocity = {x:0, y:0};
+        nodes[i].clusterDistance = [];
+      }
     }
 
     for (let i = 0; i < nodeCount; i++) {
@@ -344,9 +415,23 @@ class Nodiverse {
       const nodalGroup = node.nodalGroup;
       const nodeMomentum = multiplyScalar2D(node.velocity, node.metrics.mass);
 
-      if (nodalGroup.length > 1 && !node.inOverlapAlready) {
-        node.velocity = multiplyScalar2D(node.velocity, -1);
-      }
+      if (nodalGroup.length > 0)
+        for (let j = 0; j < nodalGroup.length; j++) {
+          node.clusterDistance[nodalGroup[j].id] = euclideanDistance(node.position, nodalGroup[j].position);
+          if (node.oldNodalGroup.includes(nodalGroup[j]) &&
+            node.clusterDistance[nodalGroup[j].id] > node.oldClusterDistance[nodalGroup[j].id])
+            continue;
+
+          let dv = applyCollisionToResult(node, nodalGroup[j]);
+          node.velocity = add2D(node.velocity, dv);
+        }
+    }
+
+    for (let i = 0; i < nodeCount; i++) {
+      this.nodes[i].oldNodalGroup = this.nodes[i].nodalGroup;
+      this.nodes[i].oldClusterDistance = this.nodes[i].clusterDistance;
+      this.nodes[i].velocity.x = Math.min(this.nodes[i].velocity.x, this.nodes[i].metrics.radius * 2);
+      this.nodes[i].velocity.y = Math.min(this.nodes[i].velocity.y, this.nodes[i].metrics.radius * 2);
     }
   }
 
