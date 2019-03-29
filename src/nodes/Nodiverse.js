@@ -333,7 +333,8 @@ class Nodiverse {
 
   updateTime() {
     ++this.clock;
-    this.nodes.forEach(function(node) {
+    const nodes = this.nodes;
+    nodes.forEach(function(node) {
       // Apply force differential
       let netAcc = { x: 0, y: 0 };
       node.nodeTracker.forces.forEach(function(force) {
@@ -358,7 +359,7 @@ class Nodiverse {
     let psum = 0;
     let ksum = 0;
     for (let i =0; i < this.nodes.length; i++) {
-      const n = this.nodes[i];
+      const n = nodes[i];
       let vm = getMagnitude(n.velocity);
       let m = n.metrics.mass;
       psum += vm * m;
