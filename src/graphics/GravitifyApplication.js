@@ -3,6 +3,7 @@
  * element into the DOM.
  */
 
+import { ChartIO } from '../data/ChartIO'
 import * as PIXI from 'pixi.js'
 
 export const TIME_UNIT = 10/1000;
@@ -18,6 +19,11 @@ export const pixiApp = new PIXI.Application({
   height: globalGameConfig.height,
   width: globalGameConfig.width
 });
+
+export const stateCharts = [
+  new ChartIO(64, 'gravitify-momentum-graph', 'Net momentum'),
+  new ChartIO(64, 'gravitify-kinetic-energy-graph', 'Net K.E.')
+];
 
 export function init() {
   pixiApp.renderer.backgroundColor = 0xFFFFFF;

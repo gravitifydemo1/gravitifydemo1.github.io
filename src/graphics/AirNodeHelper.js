@@ -10,16 +10,17 @@ const renderer = pixiApp.renderer;
  */
 export var defaultTexture;
 
-function initDefaultTexture() {
-  let nodeTexture = PIXI.RenderTexture.create(52, 52);
+function initDefaultTexture(radius=18) {
+  const diameter = 2 * radius;
+  let nodeTexture = PIXI.RenderTexture.create(diameter, diameter);
   let nodeGraphics = new PIXI.Graphics();
 
   nodeGraphics.beginFill(BACKGROUND_FILL);
-  nodeGraphics.drawCircle(26, 26, 16);
+  nodeGraphics.drawCircle(radius, radius, radius - 5);
   nodeGraphics.endFill();
 
-  nodeGraphics.lineStyle(4, BACKGROUND_FILL);
-  nodeGraphics.drawCircle(26, 26, 20);
+  nodeGraphics.lineStyle(2, BACKGROUND_FILL);
+  nodeGraphics.drawCircle(radius, radius, radius);
 
   nodeGraphics.position.x = 0;
   nodeGraphics.position.y = 0;

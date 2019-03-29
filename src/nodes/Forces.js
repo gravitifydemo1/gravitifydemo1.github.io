@@ -1,4 +1,3 @@
-import { Node } from './Node'
 const GravitifyApplication = require('../graphics/GravitifyApplication');
 import * as Vector2D from './Vector2D'
 

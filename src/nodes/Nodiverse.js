@@ -1,11 +1,11 @@
 /**
  * Handles the dynamics of the 'universe' of nodes.
  */
-
-const GravitifyApplication = require('../graphics/GravitifyApplication');
+import * as GravitifyApplication from '../graphics/GravitifyApplication'
 import { KineticSurfaceFriction, BoostForce } from './Forces'
 import { Node }  from './Node'
 const NodeDrawer = require('../graphics/NodeDrawer');
+import * as PIXI from 'pixi.js'
 
 import {
   getMagnitude,
@@ -23,6 +23,7 @@ const floor = Math.floor;
 const abs = Math.abs;
 const globalGameConfig = GravitifyApplication.globalGameConfig;
 const pixiApp = GravitifyApplication.pixiApp;
+const stateCharts = GravitifyApplication.stateCharts;
 
 const winWidth = globalGameConfig.width;
 const winHeight = globalGameConfig.height;
@@ -237,9 +238,8 @@ function isCollisionPending(node1, node2) {
 
   const upperNode = (upperNodeIs1) ? node1 : node2;
   const lowerNode = (upperNodeIs1) ? node2 : node1;
-  if ((upperNode.velocity.y/upperNode.velocity.x) < pm ||
-    (lowerNode.velocity.y/lowerNode.velocity.x) > pm) {
-  } else {
+  if (!((upperNode.velocity.y/upperNode.velocity.x) < pm) &&
+    !((lowerNode.velocity.y/lowerNode.velocity.x)) > pm) {
     return false;
   }
 
@@ -298,7 +298,7 @@ class Nodiverse {
       let drawingObject = new PIXI.Sprite(NodeDrawer.AirNode.defaultTexture);
 
       pixiApp.stage.addChild(drawingObject);
-      const node = new Node(pos, pos, 26, drawingObject);
+      const node = new Node(pos, pos, 18, drawingObject);
       this.nodes[nIdx] = node;
 
       node.nodeTracker = {
@@ -319,6 +319,7 @@ class Nodiverse {
   }
 
   startLooper() {
+    this.clock = 0;
     this.updateClock = setInterval(this.updateTime, 1000 * GravitifyApplication.TIME_UNIT);
     this.renderRecursive();
   }
@@ -331,6 +332,7 @@ class Nodiverse {
   }
 
   updateTime() {
+    ++this.clock;
     this.nodes.forEach(function(node) {
       // Apply force differential
       let netAcc = { x: 0, y: 0 };
@@ -349,6 +351,21 @@ class Nodiverse {
     });
 
     this._applyCollisionImpulse();
+
+    if (this.clock % 20 != 0) {
+      return;
+    }
+    let psum = 0;
+    let ksum = 0;
+    for (let i =0; i < this.nodes.length; i++) {
+      const n = this.nodes[i];
+      let vm = getMagnitude(n.velocity);
+      let m = n.metrics.mass;
+      psum += vm * m;
+      ksum += 0.5 * m * vm * vm;
+    }
+    stateCharts[0].addData(psum);
+    stateCharts[1].addData(ksum);
   }
 
   render() {

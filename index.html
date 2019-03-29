@@ -6,9 +6,20 @@
   <body>
     <div>
       <div id="gravitify-canvas-container"
-        style="border-style: solid; width: 512px; height: 512px;">
+        style="border-style: solid; width: 512px; height: 512px; display: inline-block;">
+      </div>
+      <div id="gravitify-momentum-graph" style="border-style: solid; height: 512px; width: 512px; display: inline-block;">
+      </div>
+      <div id="gravitify-kinetic-energy-graph" style="border-style: solid; height: 512px; width: 512px; display: inline-block;">
       </div>
     </div>
+    <script src="https://pixijs.download/release/pixi.min.js">
+    </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.core.min.js">
+    </script>
     <script src="dist/main.js"></script>
   </body>
 </html>
