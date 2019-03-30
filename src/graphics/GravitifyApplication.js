@@ -4,6 +4,7 @@
  */
 
 import { ChartIO } from '../data/ChartIO'
+import { EXP_MAF, AveragedChartIO } from '../data/AveragedChartIO'
 import * as PIXI from 'pixi.js'
 
 export const TIME_UNIT = 10/1000;
@@ -22,7 +23,7 @@ export const pixiApp = new PIXI.Application({
 
 export const stateCharts = [
   new ChartIO(64, 'gravitify-momentum-graph', 'Net momentum'),
-  new ChartIO(64, 'gravitify-kinetic-energy-graph', 'Net K.E.')
+  new AveragedChartIO(64, 'gravitify-kinetic-energy-graph', 'Net K.E.', EXP_MAF(0.5))
 ];
 
 export function init() {
