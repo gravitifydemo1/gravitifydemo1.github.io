@@ -356,16 +356,16 @@ class Nodiverse {
     if (this.clock % 20 != 0) {
       return;
     }
-    let psum = 0;
+    let psum = {x:0,y:0};
     let ksum = 0;
     for (let i =0; i < this.nodes.length; i++) {
       const n = nodes[i];
       let vm = getMagnitude(n.velocity);
       let m = n.metrics.mass;
-      psum += vm * m;
+      psum = add2D(psum, n.velocity);
       ksum += 0.5 * m * vm * vm;
     }
-    stateCharts[0].addData(psum);
+    stateCharts[0].addData(getMagnitude(psum));
     stateCharts[1].addData(ksum);
   }
 
@@ -441,7 +441,7 @@ class Nodiverse {
             continue;
 
           let dv = applyCollisionToResult(node, nodalGroup[j]);
-          node.velocity = add2D(node.velocity, dv);
+          node.velocity = add2D(node.velocity, multiplyScalar2D(dv, 1 / nodalGroup.length));
         }
     }
 
